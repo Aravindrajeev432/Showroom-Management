@@ -23,6 +23,22 @@ class MyAccountManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
+    def create_customer(self, username, email, phone_number,password):
+        if not username:
+            raise ValueError('User must have username')
+
+        if not phone_number:
+            raise ValueError('Phone number needed')
+        user = self.model(
+            email=self.normalize_email(email),
+            username=username,
+            phone_number=phone_number,
+        )
+        user.is_customer = True
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
     def create_superuser(self, username, email, phone_number, password):
         user = self.model(
             email=self.normalize_email(email),

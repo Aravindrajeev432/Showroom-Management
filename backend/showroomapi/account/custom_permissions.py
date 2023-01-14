@@ -33,7 +33,7 @@ class IsMechanic(BasePermission):
         # checking for anonymous users
         try:
             # returns true or false
-            user = request.user.is_mechanic
+            request.user.is_mechanic
         except AttributeError:
             return False
 
@@ -46,8 +46,11 @@ class IsFrontDesk(BasePermission):
         # checking for anonymous users
         try:
             # returns true or false
-            user = request.user.is_manager
+            print(request.user.role)
+            if request.user.role == "FRONT-DESK":
+                return True
+
         except AttributeError:
             return False
 
-        return user
+        return False

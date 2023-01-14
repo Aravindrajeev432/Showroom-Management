@@ -15,6 +15,7 @@ from datetime import timedelta
 import os
 from decouple import config
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 
@@ -32,22 +33,38 @@ ALLOWED_HOSTS = []
 # Application definition
 CORS_ALLOW_ALL_ORIGINS = True
 INSTALLED_APPS = [
+
+    "daphne",
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "corsheaders",
+    'corsheaders',
+
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'django_filters',
     'account',
-    'cars',
+    'cars.apps.CarsConfig',
+    'frontdesk',
+    'users',
+    'services',
+    'requests',
+    "debug_toolbar",
+
 
 ]
+ASGI_APPLICATION = "showroomapi.asgi.application"
 
 REST_FRAMEWORK = {
+    # removen this comment when app is slow
+    # 'DEFAULT_RENDERER_CLASSES': (
+    #     'drf_ujson.renderers.UJSONRenderer',
+    # ),
 
     'DEFAULT_AUTHENTICATION_CLASSES': (
 
@@ -57,7 +74,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(seconds=5),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=45),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
@@ -97,6 +114,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = 'showroomapi.urls'
@@ -117,6 +135,15 @@ TEMPLATES = [
     },
 ]
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [('localhost', 6379)],
+        },
+    },
+}
+
 WSGI_APPLICATION = 'showroomapi.wsgi.application'
 
 AUTH_USER_MODEL = 'account.Account'
@@ -134,6 +161,7 @@ DATABASES = {
         'PORT': '',
     }
 }
+# WATCHMAN_CHECKS=('connections[showroommanagement].introspection.table_names()',)
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -158,7 +186,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
@@ -174,3 +202,13 @@ STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 # MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+
+# toolbar
+INTERNAL_IPS = [
+    # ...
+    "127.0.0.1",
+    # ...
+]
+

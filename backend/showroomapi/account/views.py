@@ -59,7 +59,7 @@ class StaffLogin(APIView):
     def get(self, request):
         return Response({}, status=status.HTTP_200_OK)
 
-    def get_tokens_for_user(self,user):
+    def get_tokens_for_user(self, user):
         refresh = RefreshToken.for_user(user)
 
         return {
@@ -113,8 +113,14 @@ class AddEmployee(MycustomMixin, APIView):
         phone_number = body['phone_number']
         password = body['username'] + "123"
         if body['role'] == "Advisor":
-            Account.objects.create_advisor(email=email, username=username, phone_number=phone_number, password=password)
-        return Response(status=status.HTTP_201_CREATED)
+            # Account.objects.create_advisor(email=email, username=username, phone_number=phone_number, password=password)
+            return Response(status=status.HTTP_201_CREATED)
+        elif body['role'] == "Front_desk":
+            Account.objects.create_front_desk(email=email, username=username,
+                                              phone_number=phone_number, password=password)
+            return Response(status=status.HTTP_201_CREATED)
+
+        return Response(status=status.HTTP_502_BAD_GATEWAY, statusText="email already taken")
 
     def get(self, request):
         user = request.user
