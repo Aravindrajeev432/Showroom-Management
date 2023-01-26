@@ -119,6 +119,9 @@ class AddEmployee(MycustomMixin, APIView):
             Account.objects.create_front_desk(email=email, username=username,
                                               phone_number=phone_number, password=password)
             return Response(status=status.HTTP_201_CREATED)
+        elif body['role'] == 'Mechanic':
+            Account.objects.create_mechanic(email=email,username=username,phone_number=phone_number,password=password)
+            return Response(status=status.HTTP_201_CREATED)
 
         return Response(status=status.HTTP_502_BAD_GATEWAY, statusText="email already taken")
 

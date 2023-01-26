@@ -2,12 +2,15 @@ from django.db import models
 
 from account.models import Account
 from django.core.validators import FileExtensionValidator
-from django.db.models.signals import pre_save
-from django.dispatch import receiver
-from pyasn1.compat.octets import null
 
 
 # Create your models here.
+
+class UniPartNumbers(models.Model):
+    universal_car_part_number = models.CharField(max_length=200, unique=True)
+
+    def __str__(self):
+        return self.universal_car_part_number
 
 class Cars(models.Model):
     GEAR_TYPE_CHOICES = [
@@ -21,7 +24,7 @@ class Cars(models.Model):
         ('Hatchback', 'Hatchback'),
     ]
 
-    user = models.ForeignKey(Account, on_delete=models.SET_NULL, related_name='usercar', null=True)
+    user = models.ForeignKey(Account, on_delete=models.SET_NULL, related_name='usercar', null=True,blank=True)
     model_name = models.CharField(max_length=100)
     model_year = models.CharField(max_length=50)
     type = models.CharField(max_length=50, null=True, choices=CAR_TYPE_CHOICES)
@@ -39,13 +42,23 @@ class Cars(models.Model):
     wheel_base = models.CharField(max_length=100)
     is_active = models.BooleanField(default=True)
     is_deleted = models.BooleanField(default=False)
-    verified_by = models.CharField(max_length=100, null=True)
-    universal_car_number = models.CharField(max_length=100,null=True)
-    universal_part_number = models.CharField(max_length=100,null=True)
+    delivered_date = models.DateField(default=None, null=True,blank=True)
+    verified_by = models.CharField(max_length=100, default='', blank=True)
+    universal_car_number = models.CharField(max_length=100, default='', blank=True)
+    universal_part_number = models.CharField(max_length=100, default='', blank=True)
+    uni_car_part_num = models.ForeignKey(
+        UniPartNumbers,
+        on_delete=models.SET_NULL,
+        related_name='unicarpartnum',
+        null=True,
+        blank=True,
+    )
 
 
 def nameFile(instance, filename):
     return '/cars'.join(['images', str(instance.model_name + instance.model_year), filename])
+
+
 def namePicFile(instance, filename):
     return '/cars'.join(['images', str(instance.id), filename])
 
@@ -62,11 +75,7 @@ class FuelType(models.Model):
     fuel_type = models.CharField(max_length=50)
 
 
-
-
 class DisplayCars(models.Model):
-
-
     CAR_TYPE_CHOICES = [
         ('Sedan', 'Sedan'),
         ('SUV', 'SUV'),
@@ -93,8 +102,14 @@ class DisplayCars(models.Model):
 
 
 class DisplayCarImages(models.Model):
-    car = models.ForeignKey(DisplayCars,null=True,related_name='carimg',on_delete=models.CharField)
+    car = models.ForeignKey(DisplayCars, null=True, related_name='carimg', on_delete=models.CASCADE)  # django-doctor: disable=field-null-not-blank
     image = models.ImageField(upload_to=namePicFile, blank=True, null=True,
                               validators=[FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "webp"])])
 
 
+class CarParts(models.Model):
+    unique_part_name = models.CharField(max_length=200)
+    compatible_cars = models.ManyToManyField(UniPartNumbers)
+    stock = models.IntegerField()
+    price = models.IntegerField()
+    labour_charge = models.IntegerField()

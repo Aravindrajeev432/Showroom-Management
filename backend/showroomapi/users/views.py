@@ -2,16 +2,18 @@ from django.db.migrations import serializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny,IsAuthenticated
 from rest_framework.authentication import BasicAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import generics
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
 from account.models import Account
 from cars.models import Cars
 from django.contrib.auth import authenticate
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .serializers import MyCarsSerializer
 
+from .serializers import MyCarsSerializer
+from django_auto_prefetching import AutoPrefetchViewSetMixin
 
 # Create your views here.
 
@@ -73,9 +75,21 @@ class UserLogin(APIView,TokenObtainPairSerializer):
         return Response(data=data, status=status.HTTP_200_OK)
 
 
-class GetMyCars(generics.ListAPIView):
-    permission_classes = [AllowAny]
+class GetMyCars(AutoPrefetchViewSetMixin,generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
     model = Cars
     serializer_class = MyCarsSerializer
-    user = Account.objects.get(id=13)
-    queryset = Cars.objects.filter(user=user)
+
+    def get_queryset(self):
+        # user= Account.objects.get(id=self.request.user)
+        return Cars.objects.filter(user=self.request.user).order_by('id')
+# class GetMyCars(APIView):
+#     def get(self,request):
+#         permission_classes = [IsAuthenticated]
+#         query = Cars.objects.filter(user=self.request.user)
+#         serializer_classobj = MyCarsSerializer(query,many=True,context={'id':'sad'})
+#
+#         return Response(serializer_classobj.data)
+#         def get_queryset(self):
+#             # user= Account.objects.get(id=self.request.user)
+#             return Cars.objects.filter(user=self.request.user)
